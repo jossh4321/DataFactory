@@ -1097,10 +1097,10 @@
 						"timeZone": "SA Pacific Standard Time",
 						"schedule": {
 							"minutes": [
-								59
+								5
 							],
 							"hours": [
-								17
+								20
 							]
 						}
 					}
