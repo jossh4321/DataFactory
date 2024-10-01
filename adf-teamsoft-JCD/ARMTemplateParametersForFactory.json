@@ -1,0 +1,39 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "adf-teamsoft-JCD"
+		},
+		"LS_ADLS_accountKey": {
+			"value": ""
+		},
+		"LS_ASQL_AdventureWorks_connectionString": {
+			"value": ""
+		},
+		"LS_ASQL_Integracion_connectionString": {
+			"value": ""
+		},
+		"LS_ASQL_Tailspin_password": {
+			"value": ""
+		},
+		"LS_S3_secretAccessKey": {
+			"value": ""
+		},
+		"LS_ADLS_properties_typeProperties_url": {
+			"value": "https://dblacademyadls.dfs.core.windows.net/"
+		},
+		"LS_ASQL_Tailspin_properties_typeProperties_server": {
+			"value": "academy-sqlsrv.database.windows.net"
+		},
+		"LS_ASQL_Tailspin_properties_typeProperties_database": {
+			"value": "Tailspin"
+		},
+		"LS_ASQL_Tailspin_properties_typeProperties_userName": {
+			"value": "usr_asql_integracion"
+		},
+		"LS_S3_properties_typeProperties_accessKeyId": {
+			"value": "AKIAWHQSER2DT3HU3OO6"
+		}
+	}
+}

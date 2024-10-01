@@ -1,0 +1,132 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Nombre de instancia de Data Factory",
+			"defaultValue": "adf-teamsoft-JCD"
+		},
+		"LS_ADLS_accountKey": {
+			"type": "secureString",
+			"metadata": "Cadena protegida para \"accountKey\"de \"LS_ADLS\""
+		},
+		"LS_ASQL_AdventureWorks_connectionString": {
+			"type": "secureString",
+			"metadata": "Cadena protegida para \"connectionString\"de \"LS_ASQL_AdventureWorks\""
+		},
+		"LS_ASQL_Integracion_connectionString": {
+			"type": "secureString",
+			"metadata": "Cadena protegida para \"connectionString\"de \"LS_ASQL_Integracion\""
+		},
+		"LS_ASQL_Tailspin_password": {
+			"type": "secureString",
+			"metadata": "Cadena protegida para \"password\"de \"LS_ASQL_Tailspin\""
+		},
+		"LS_S3_secretAccessKey": {
+			"type": "secureString",
+			"metadata": "Cadena protegida para \"secretAccessKey\"de \"LS_S3\""
+		},
+		"LS_ADLS_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://dblacademyadls.dfs.core.windows.net/"
+		},
+		"LS_ASQL_Tailspin_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "academy-sqlsrv.database.windows.net"
+		},
+		"LS_ASQL_Tailspin_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "Tailspin"
+		},
+		"LS_ASQL_Tailspin_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "usr_asql_integracion"
+		},
+		"LS_S3_properties_typeProperties_accessKeyId": {
+			"type": "string",
+			"defaultValue": "AKIAWHQSER2DT3HU3OO6"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI de la cuenta de almacenamiento que contiene las plantillas de ARM vinculadas."
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Token de SAS para la cuenta de almacenamiento que contiene las plantillas de ARM vinculadas"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "adf-teamsoft-JCD_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"LS_ADLS_accountKey": {
+						"value": "[parameters('LS_ADLS_accountKey')]"
+					},
+					"LS_ASQL_AdventureWorks_connectionString": {
+						"value": "[parameters('LS_ASQL_AdventureWorks_connectionString')]"
+					},
+					"LS_ASQL_Integracion_connectionString": {
+						"value": "[parameters('LS_ASQL_Integracion_connectionString')]"
+					},
+					"LS_ASQL_Tailspin_password": {
+						"value": "[parameters('LS_ASQL_Tailspin_password')]"
+					},
+					"LS_S3_secretAccessKey": {
+						"value": "[parameters('LS_S3_secretAccessKey')]"
+					},
+					"LS_ADLS_properties_typeProperties_url": {
+						"value": "[parameters('LS_ADLS_properties_typeProperties_url')]"
+					},
+					"LS_ASQL_Tailspin_properties_typeProperties_server": {
+						"value": "[parameters('LS_ASQL_Tailspin_properties_typeProperties_server')]"
+					},
+					"LS_ASQL_Tailspin_properties_typeProperties_database": {
+						"value": "[parameters('LS_ASQL_Tailspin_properties_typeProperties_database')]"
+					},
+					"LS_ASQL_Tailspin_properties_typeProperties_userName": {
+						"value": "[parameters('LS_ASQL_Tailspin_properties_typeProperties_userName')]"
+					},
+					"LS_S3_properties_typeProperties_accessKeyId": {
+						"value": "[parameters('LS_S3_properties_typeProperties_accessKeyId')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "adf-teamsoft-JCD_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'adf-teamsoft-JCD_ArmTemplate_0')]"
+			]
+		}
+	]
+}
