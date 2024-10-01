@@ -1,0 +1,12 @@
+{
+	"name": "LS_ASQL_AdventureWorks",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"connectionString": "integrated security=False;encrypt=True;connection timeout=30;data source=academy-sqlsrv.database.windows.net;initial catalog=AdventureWorks;user id=usr_asql_integracion",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQEYyMDUyRDEzLTVBNjgtNDYyNC1BRDI4LThBOEU4RjI2N0FDRV84YjE5OGFkYS1hMjExLTQzNzgtYTMxOC1mZmQ5MDVlMzMxMjgiDQp9"
+		}
+	}
+}

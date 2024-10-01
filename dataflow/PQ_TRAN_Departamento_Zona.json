@@ -1,0 +1,28 @@
+{
+	"name": "PQ_TRAN_Departamento_Zona",
+	"properties": {
+		"type": "WranglingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"name": "DS_ADLS_Departamento",
+					"script": "source(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> DS_ADLS_Departamento",
+					"dataset": {
+						"referenceName": "DS_ADLS_Departamento",
+						"type": "DatasetReference"
+					}
+				},
+				{
+					"name": "DS_ADLS_Zona",
+					"script": "source(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> DS_ADLS_Zona",
+					"dataset": {
+						"referenceName": "DS_ADLS_Zona",
+						"type": "DatasetReference"
+					}
+				}
+			],
+			"script": "section Section1;\r\nshared DS_ADLS_Departamento = let AdfDoc = AzureStorage.DataLakeContents(\"https://dblacademyadls.dfs.core.windows.net/archivosfuente/Maestros.xlsx\"), Excel = Excel.Workbook(AdfDoc),ExcelSheet = Excel{[Item=\"Departamento\",Kind=\"Sheet\"]}[Data], PromotedHeaders = Table.PromoteHeaders(ExcelSheet, [PromoteAllScalars = true]) in PromotedHeaders;\r\nshared DS_ADLS_Zona = let AdfDoc = AzureStorage.DataLakeContents(\"https://dblacademyadls.dfs.core.windows.net/archivosfuente/Maestros.xlsx\"), Excel = Excel.Workbook(AdfDoc),ExcelSheet = Excel{[Item=\"Zona\",Kind=\"Sheet\"]}[Data], PromotedHeaders = Table.PromoteHeaders(ExcelSheet, [PromoteAllScalars = true]) in PromotedHeaders;\r\nshared UserQuery = let Source = #\"DS_ADLS_Departamento\",\r\n  #\"Tipo de columna cambiado\" = Table.TransformColumnTypes(Source, {{\"DepartamentoID\", Int64.Type}}),\r\n  #\"Columnas quitadas\" = Table.RemoveColumns(#\"Tipo de columna cambiado\", {\"CodigoDepartamento\", \"DepartamentoPais\"}),\r\n  #\"Consultas combinadas\" = Table.NestedJoin(#\"Columnas quitadas\", {\"ZonaID\"}, DS_ADLS_Zona, {\"ZonaID\"}, \"DS_ADLS_Zona\", JoinKind.LeftOuter),\r\n  #\"DS_ADLS_Zona expandido\" = Table.ExpandTableColumn(#\"Consultas combinadas\", \"DS_ADLS_Zona\", {\"Zona\"}, {\"Zona\"}) in #\"DS_ADLS_Zona expandido\";\r\n",
+			"documentLocale": "en-us"
+		}
+	}
+}

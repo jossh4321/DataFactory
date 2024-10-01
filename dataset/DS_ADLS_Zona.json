@@ -1,0 +1,31 @@
+{
+	"name": "DS_ADLS_Zona",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Excel",
+		"typeProperties": {
+			"sheetName": "Zona",
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "Maestros.xlsx",
+				"fileSystem": "archivosfuente"
+			},
+			"firstRowAsHeader": true
+		},
+		"schema": [
+			{
+				"name": "ZonaID",
+				"type": "String"
+			},
+			{
+				"name": "Zona",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

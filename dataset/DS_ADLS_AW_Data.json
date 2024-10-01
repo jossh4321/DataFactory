@@ -1,0 +1,32 @@
+{
+	"name": "DS_ADLS_AW_Data",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"Ruta": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "Modulo 05"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": {
+					"value": "@dataset().Ruta",
+					"type": "Expression"
+				},
+				"fileSystem": "bronce06"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

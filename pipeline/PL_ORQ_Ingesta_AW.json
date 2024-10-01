@@ -1,0 +1,58 @@
+{
+	"name": "PL_ORQ_Ingesta_AW",
+	"properties": {
+		"activities": [
+			{
+				"name": "PL_LOAD_Venta_Trn",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "PL_LOAD_Venta_Mst",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "PL_AW_ASQL_to_ADLS",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Grupo": "Venta-Trn"
+					}
+				}
+			},
+			{
+				"name": "PL_LOAD_Venta_Mst",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "PL_AW_ASQL_to_ADLS",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Grupo": "Venta-Mst"
+					}
+				}
+			}
+		],
+		"folder": {
+			"name": "Modulo 05"
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-09-28T15:44:28Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

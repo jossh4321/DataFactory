@@ -1,0 +1,9 @@
+{
+	"name": "adf-teamsoft-JCD",
+	"location": "brazilsouth",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "0426d8ee-13e1-4d7c-93be-d56ea0ddec4b",
+		"tenantId": "9d524a39-30ac-4a41-9e2f-dd2563dbc78f"
+	}
+}
