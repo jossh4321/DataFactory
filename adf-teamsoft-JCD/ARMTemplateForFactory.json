@@ -1078,7 +1078,7 @@
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"annotations": [],
-				"runtimeState": "Stopped",
+				"runtimeState": "Started",
 				"pipelines": [
 					{
 						"pipelineReference": {
@@ -1093,14 +1093,14 @@
 					"recurrence": {
 						"frequency": "Day",
 						"interval": 1,
-						"startTime": "2024-10-01T00:38:00",
+						"startTime": "2024-09-30T00:00:00",
 						"timeZone": "SA Pacific Standard Time",
 						"schedule": {
 							"minutes": [
-								0
+								55
 							],
 							"hours": [
-								2
+								17
 							]
 						}
 					}
