@@ -11,6 +11,9 @@
 		"LS_ASQL_AdventureWorks_connectionString": {
 			"value": ""
 		},
+		"LS_ASQL_Datawarehouse_password": {
+			"value": ""
+		},
 		"LS_ASQL_Integracion_connectionString": {
 			"value": ""
 		},
@@ -22,6 +25,15 @@
 		},
 		"LS_ADLS_properties_typeProperties_url": {
 			"value": "https://dblacademyadls.dfs.core.windows.net/"
+		},
+		"LS_ASQL_Datawarehouse_properties_typeProperties_server": {
+			"value": "academy-sqlsrv.database.windows.net"
+		},
+		"LS_ASQL_Datawarehouse_properties_typeProperties_database": {
+			"value": "Datawarehouse"
+		},
+		"LS_ASQL_Datawarehouse_properties_typeProperties_userName": {
+			"value": "usr_asql_integracion"
 		},
 		"LS_ASQL_Tailspin_properties_typeProperties_server": {
 			"value": "academy-sqlsrv.database.windows.net"

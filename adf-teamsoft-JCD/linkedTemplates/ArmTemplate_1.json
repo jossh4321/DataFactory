@@ -13,6 +13,110 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/DS_S3_Movies')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_S3",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AmazonS3Location",
+						"bucketName": "japerlov-test",
+						"folderPath": "stg-data",
+						"fileName": "moviesDB.csv"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "movie",
+						"type": "String"
+					},
+					{
+						"name": "title",
+						"type": "String"
+					},
+					{
+						"name": "genres",
+						"type": "String"
+					},
+					{
+						"name": "year",
+						"type": "String"
+					},
+					{
+						"name": "Rating",
+						"type": "String"
+					},
+					{
+						"name": "RottenTomato",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_SQL_Integracion_TablaIngesta')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ASQL_Integracion",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Modulo 05"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "IdTabla",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "Grupo",
+						"type": "varchar"
+					},
+					{
+						"name": "NombreEsquema",
+						"type": "varchar"
+					},
+					{
+						"name": "NombreTabla",
+						"type": "varchar"
+					},
+					{
+						"name": "Estado",
+						"type": "bit"
+					},
+					{
+						"name": "UsuarioCreacion",
+						"type": "varchar"
+					},
+					{
+						"name": "FechaCreacion",
+						"type": "date"
+					}
+				],
+				"typeProperties": {
+					"schema": "intg",
+					"table": "TablasIngesta"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/PL_AW_ASQL_to_ADLS')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -145,7 +249,9 @@
 				"annotations": [],
 				"lastPublishTime": "2024-09-28T15:44:27Z"
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_SQL_Integracion_TablaIngesta')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/PL_DATA_CopiaArchivos')]",
@@ -221,7 +327,9 @@
 				"annotations": [],
 				"lastPublishTime": "2024-09-19T00:53:30Z"
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_S3_Movies')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/DF_TRAN_UpdateCustomerDimension')]",
@@ -368,6 +476,215 @@
 						"          ModifiedDate,",
 						"          HashKey = CreateCustomHash@HashKey",
 						"     )) ~> SinkDimCustomer"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_TRAN_UpdateProductDimension')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Evaluacion Final"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_Tailspin_Product",
+								"type": "DatasetReference"
+							},
+							"name": "SourceDBProduct"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_Tailspin_ProductSubcategory",
+								"type": "DatasetReference"
+							},
+							"name": "SourceDBProductSubcategory"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_Tailspin_ProductCategory",
+								"type": "DatasetReference"
+							},
+							"name": "SourceDBProductCategory"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_Datawarehouse_dimProduct06",
+								"type": "DatasetReference"
+							},
+							"name": "DimProduct06"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_Datawarehouse_dimProduct06",
+								"type": "DatasetReference"
+							},
+							"name": "SinkDimProduct06"
+						}
+					],
+					"transformations": [
+						{
+							"name": "CreateCustomHash"
+						},
+						{
+							"name": "LookupProductSubcategoryKey"
+						},
+						{
+							"name": "LookUpProductCategoryKey"
+						},
+						{
+							"name": "ExistHash"
+						},
+						{
+							"name": "LookUpProductKey"
+						},
+						{
+							"name": "SetDates"
+						},
+						{
+							"name": "AllowUpsert"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          ProductKey as integer,",
+						"          ProductSubcategoryKey as integer,",
+						"          ProductName as string,",
+						"          StandardCost as decimal(19,4),",
+						"          Color as string,",
+						"          SafetyStockLevel as integer,",
+						"          ReorderPoint as integer,",
+						"          ListPrice as decimal(19,4),",
+						"          Size as string,",
+						"          Weight as double,",
+						"          DaysToManufacture as integer,",
+						"          ModelName as string,",
+						"          Description as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> SourceDBProduct",
+						"source(output(",
+						"          ProductSubCategoryKey as integer,",
+						"          ProductSubcategoryName as string,",
+						"          ProductCategoryKey as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> SourceDBProductSubcategory",
+						"source(output(",
+						"          ProductCategoryKey as integer,",
+						"          ProductCategoryName as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> SourceDBProductCategory",
+						"source(output(",
+						"          ProductKey as integer,",
+						"          ProductSubcategoryName as string,",
+						"          ProductCategoryName as string,",
+						"          ProductName as string,",
+						"          StandardCost as decimal(19,4),",
+						"          Color as string,",
+						"          ListPrice as decimal(19,4),",
+						"          Size as string,",
+						"          Weight as double,",
+						"          DaysToManufacture as integer,",
+						"          ModelName as string,",
+						"          Description as string,",
+						"          InsertedDate as timestamp,",
+						"          ModifiedDate as timestamp,",
+						"          HashKey as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> DimProduct06",
+						"LookupProductSubcategoryKey derive(HashKey = sha2(256, ProductName \r",
+						"+ iifNull(ProductSubcategoryName, '')\r",
+						"+ iifNull(ProductCategoryName, '')\r",
+						"+ iif(isNull(StandardCost), '', toString(StandardCost)) \r",
+						"+ Color\r",
+						"+ iif(isNull(ListPrice), '', toString(ListPrice))\r",
+						"+ iifNull(Size, '')\r",
+						"+ iif(isNull(Weight), '', toString(Weight))\r",
+						"+ iif(isNull(DaysToManufacture), '', toString(DaysToManufacture))\r",
+						"+ iifNull(ModelName, '')\r",
+						"+ iifNull(Description, ''))) ~> CreateCustomHash",
+						"SourceDBProduct, LookUpProductCategoryKey lookup(SourceDBProduct@ProductSubcategoryKey == SourceDBProductSubcategory@ProductSubCategoryKey,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> LookupProductSubcategoryKey",
+						"SourceDBProductSubcategory, SourceDBProductCategory lookup(SourceDBProductSubcategory@ProductCategoryKey == SourceDBProductCategory@ProductCategoryKey,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> LookUpProductCategoryKey",
+						"CreateCustomHash, DimProduct06 exists(CreateCustomHash@HashKey == DimProduct06@HashKey,",
+						"     negate:true,",
+						"     broadcast: 'auto')~> ExistHash",
+						"ExistHash, DimProduct06 lookup(SourceDBProduct@ProductKey == DimProduct06@ProductKey,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> LookUpProductKey",
+						"LookUpProductKey derive(InsertedDate = iif(isNull(InsertedDate), currentTimestamp(), InsertedDate),",
+						"          ModifiedDate = currentTimestamp()) ~> SetDates",
+						"SetDates alterRow(upsertIf(true())) ~> AllowUpsert",
+						"AllowUpsert sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          ProductKey as integer,",
+						"          ProductSubcategoryName as string,",
+						"          ProductCategoryName as string,",
+						"          ProductName as string,",
+						"          StandardCost as decimal(19,4),",
+						"          Color as string,",
+						"          ListPrice as decimal(19,4),",
+						"          Size as string,",
+						"          Weight as double,",
+						"          DaysToManufacture as integer,",
+						"          ModelName as string,",
+						"          Description as string,",
+						"          InsertedDate as timestamp,",
+						"          ModifiedDate as timestamp,",
+						"          HashKey as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:true,",
+						"     keys:['ProductKey'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          ProductKey = SourceDBProduct@ProductKey,",
+						"          ProductSubcategoryName = SourceDBProductCategory@ProductCategoryName,",
+						"          ProductCategoryName = SourceDBProductSubcategory@ProductSubcategoryName,",
+						"          ProductName = SourceDBProduct@ProductName,",
+						"          StandardCost = SourceDBProduct@StandardCost,",
+						"          Color = SourceDBProduct@Color,",
+						"          ListPrice = SourceDBProduct@ListPrice,",
+						"          Size = SourceDBProduct@Size,",
+						"          Weight = SourceDBProduct@Weight,",
+						"          DaysToManufacture = SourceDBProduct@DaysToManufacture,",
+						"          ModelName = SourceDBProduct@ModelName,",
+						"          Description = SourceDBProduct@Description,",
+						"          InsertedDate,",
+						"          ModifiedDate,",
+						"          HashKey = CreateCustomHash@HashKey",
+						"     )) ~> SinkDimProduct06"
 					]
 				}
 			},

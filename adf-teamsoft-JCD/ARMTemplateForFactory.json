@@ -15,6 +15,10 @@
 			"type": "secureString",
 			"metadata": "Cadena protegida para \"connectionString\"de \"LS_ASQL_AdventureWorks\""
 		},
+		"LS_ASQL_Datawarehouse_password": {
+			"type": "secureString",
+			"metadata": "Cadena protegida para \"password\"de \"LS_ASQL_Datawarehouse\""
+		},
 		"LS_ASQL_Integracion_connectionString": {
 			"type": "secureString",
 			"metadata": "Cadena protegida para \"connectionString\"de \"LS_ASQL_Integracion\""
@@ -30,6 +34,18 @@
 		"LS_ADLS_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://dblacademyadls.dfs.core.windows.net/"
+		},
+		"LS_ASQL_Datawarehouse_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "academy-sqlsrv.database.windows.net"
+		},
+		"LS_ASQL_Datawarehouse_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "Datawarehouse"
+		},
+		"LS_ASQL_Datawarehouse_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "usr_asql_integracion"
 		},
 		"LS_ASQL_Tailspin_properties_typeProperties_server": {
 			"type": "string",
@@ -646,12 +662,12 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/DS_ASQL_ProductSubcategory')]",
+			"name": "[concat(parameters('factoryName'), '/DS_ASQL_Datawarehouse_dimProduct06')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "LS_ASQL_Tailspin",
+					"referenceName": "LS_ASQL_Datawarehouse",
 					"type": "LinkedServiceReference"
 				},
 				"folder": {
@@ -661,7 +677,7 @@
 				"type": "AzureSqlTable",
 				"schema": [
 					{
-						"name": "ProductSubCategoryKey",
+						"name": "ProductKey",
 						"type": "int",
 						"precision": 10
 					},
@@ -670,18 +686,75 @@
 						"type": "nvarchar"
 					},
 					{
-						"name": "ProductCategoryKey",
+						"name": "ProductCategoryName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "ProductName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "StandardCost",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "Color",
+						"type": "nvarchar"
+					},
+					{
+						"name": "ListPrice",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "Size",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Weight",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "DaysToManufacture",
 						"type": "int",
 						"precision": 10
+					},
+					{
+						"name": "ModelName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar"
+					},
+					{
+						"name": "InsertedDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "ModifiedDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "HashKey",
+						"type": "varchar"
 					}
 				],
 				"typeProperties": {
 					"schema": "dbo",
-					"table": "ProductSubcategory"
+					"table": "dimProduct06"
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_Tailspin')]"
+				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_Datawarehouse')]"
 			]
 		},
 		{
@@ -833,41 +906,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/DS_ASQL_Tailspin_ProductCategory')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "LS_ASQL_Tailspin",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "Evaluacion Final"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "ProductCategoryKey",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "ProductCategoryName",
-						"type": "nvarchar"
-					}
-				],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "ProductCategory"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_Tailspin')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/DS_ASQL_Tailspin_Producto')]",
+			"name": "[concat(parameters('factoryName'), '/DS_ASQL_Tailspin_Product')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -947,6 +986,79 @@
 				"typeProperties": {
 					"schema": "dbo",
 					"table": "Product"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_Tailspin')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ASQL_Tailspin_ProductCategory')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ASQL_Tailspin",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Evaluacion Final"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "ProductCategoryKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ProductCategoryName",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "ProductCategory"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_Tailspin')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ASQL_Tailspin_ProductSubcategory')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ASQL_Tailspin",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Evaluacion Final"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "ProductSubCategoryKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ProductSubcategoryName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "ProductCategoryKey",
+						"type": "int",
+						"precision": 10
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "ProductSubcategory"
 				}
 			},
 			"dependsOn": [
@@ -1174,6 +1286,28 @@
 				"type": "AzureSqlDatabase",
 				"typeProperties": {
 					"connectionString": "[parameters('LS_ASQL_AdventureWorks_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_ASQL_Datawarehouse')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('LS_ASQL_Datawarehouse_properties_typeProperties_server')]",
+					"database": "[parameters('LS_ASQL_Datawarehouse_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('LS_ASQL_Datawarehouse_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('LS_ASQL_Datawarehouse_password')]"
+					}
 				}
 			},
 			"dependsOn": []
@@ -1431,6 +1565,220 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/DS_ASQL_Tailspin_CustomerSource')]",
 				"[concat(variables('factoryId'), '/datasets/DS_ASQL_Tailspin_DimCustomer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_TRAN_UpdateProductDimension')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Evaluacion Final"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_Tailspin_Product",
+								"type": "DatasetReference"
+							},
+							"name": "SourceDBProduct"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_Tailspin_ProductSubcategory",
+								"type": "DatasetReference"
+							},
+							"name": "SourceDBProductSubcategory"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_Tailspin_ProductCategory",
+								"type": "DatasetReference"
+							},
+							"name": "SourceDBProductCategory"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_Datawarehouse_dimProduct06",
+								"type": "DatasetReference"
+							},
+							"name": "DimProduct06"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_Datawarehouse_dimProduct06",
+								"type": "DatasetReference"
+							},
+							"name": "SinkDimProduct06"
+						}
+					],
+					"transformations": [
+						{
+							"name": "CreateCustomHash"
+						},
+						{
+							"name": "LookupProductSubcategoryKey"
+						},
+						{
+							"name": "LookUpProductCategoryKey"
+						},
+						{
+							"name": "ExistHash"
+						},
+						{
+							"name": "LookUpProductKey"
+						},
+						{
+							"name": "SetDates"
+						},
+						{
+							"name": "AllowUpsert"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          ProductKey as integer,",
+						"          ProductSubcategoryKey as integer,",
+						"          ProductName as string,",
+						"          StandardCost as decimal(19,4),",
+						"          Color as string,",
+						"          SafetyStockLevel as integer,",
+						"          ReorderPoint as integer,",
+						"          ListPrice as decimal(19,4),",
+						"          Size as string,",
+						"          Weight as double,",
+						"          DaysToManufacture as integer,",
+						"          ModelName as string,",
+						"          Description as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> SourceDBProduct",
+						"source(output(",
+						"          ProductSubCategoryKey as integer,",
+						"          ProductSubcategoryName as string,",
+						"          ProductCategoryKey as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> SourceDBProductSubcategory",
+						"source(output(",
+						"          ProductCategoryKey as integer,",
+						"          ProductCategoryName as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> SourceDBProductCategory",
+						"source(output(",
+						"          ProductKey as integer,",
+						"          ProductSubcategoryName as string,",
+						"          ProductCategoryName as string,",
+						"          ProductName as string,",
+						"          StandardCost as decimal(19,4),",
+						"          Color as string,",
+						"          ListPrice as decimal(19,4),",
+						"          Size as string,",
+						"          Weight as double,",
+						"          DaysToManufacture as integer,",
+						"          ModelName as string,",
+						"          Description as string,",
+						"          InsertedDate as timestamp,",
+						"          ModifiedDate as timestamp,",
+						"          HashKey as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> DimProduct06",
+						"LookupProductSubcategoryKey derive(HashKey = sha2(256, ProductName \r",
+						"+ iifNull(ProductSubcategoryName, '')\r",
+						"+ iifNull(ProductCategoryName, '')\r",
+						"+ iif(isNull(StandardCost), '', toString(StandardCost)) \r",
+						"+ Color\r",
+						"+ iif(isNull(ListPrice), '', toString(ListPrice))\r",
+						"+ iifNull(Size, '')\r",
+						"+ iif(isNull(Weight), '', toString(Weight))\r",
+						"+ iif(isNull(DaysToManufacture), '', toString(DaysToManufacture))\r",
+						"+ iifNull(ModelName, '')\r",
+						"+ iifNull(Description, ''))) ~> CreateCustomHash",
+						"SourceDBProduct, LookUpProductCategoryKey lookup(SourceDBProduct@ProductSubcategoryKey == SourceDBProductSubcategory@ProductSubCategoryKey,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> LookupProductSubcategoryKey",
+						"SourceDBProductSubcategory, SourceDBProductCategory lookup(SourceDBProductSubcategory@ProductCategoryKey == SourceDBProductCategory@ProductCategoryKey,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> LookUpProductCategoryKey",
+						"CreateCustomHash, DimProduct06 exists(CreateCustomHash@HashKey == DimProduct06@HashKey,",
+						"     negate:true,",
+						"     broadcast: 'auto')~> ExistHash",
+						"ExistHash, DimProduct06 lookup(SourceDBProduct@ProductKey == DimProduct06@ProductKey,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> LookUpProductKey",
+						"LookUpProductKey derive(InsertedDate = iif(isNull(InsertedDate), currentTimestamp(), InsertedDate),",
+						"          ModifiedDate = currentTimestamp()) ~> SetDates",
+						"SetDates alterRow(upsertIf(true())) ~> AllowUpsert",
+						"AllowUpsert sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          ProductKey as integer,",
+						"          ProductSubcategoryName as string,",
+						"          ProductCategoryName as string,",
+						"          ProductName as string,",
+						"          StandardCost as decimal(19,4),",
+						"          Color as string,",
+						"          ListPrice as decimal(19,4),",
+						"          Size as string,",
+						"          Weight as double,",
+						"          DaysToManufacture as integer,",
+						"          ModelName as string,",
+						"          Description as string,",
+						"          InsertedDate as timestamp,",
+						"          ModifiedDate as timestamp,",
+						"          HashKey as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:true,",
+						"     keys:['ProductKey'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          ProductKey = SourceDBProduct@ProductKey,",
+						"          ProductSubcategoryName = SourceDBProductCategory@ProductCategoryName,",
+						"          ProductCategoryName = SourceDBProductSubcategory@ProductSubcategoryName,",
+						"          ProductName = SourceDBProduct@ProductName,",
+						"          StandardCost = SourceDBProduct@StandardCost,",
+						"          Color = SourceDBProduct@Color,",
+						"          ListPrice = SourceDBProduct@ListPrice,",
+						"          Size = SourceDBProduct@Size,",
+						"          Weight = SourceDBProduct@Weight,",
+						"          DaysToManufacture = SourceDBProduct@DaysToManufacture,",
+						"          ModelName = SourceDBProduct@ModelName,",
+						"          Description = SourceDBProduct@Description,",
+						"          InsertedDate,",
+						"          ModifiedDate,",
+						"          HashKey = CreateCustomHash@HashKey",
+						"     )) ~> SinkDimProduct06"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_ASQL_Tailspin_Product')]",
+				"[concat(variables('factoryId'), '/datasets/DS_ASQL_Tailspin_ProductSubcategory')]",
+				"[concat(variables('factoryId'), '/datasets/DS_ASQL_Tailspin_ProductCategory')]",
+				"[concat(variables('factoryId'), '/datasets/DS_ASQL_Datawarehouse_dimProduct06')]"
 			]
 		},
 		{
