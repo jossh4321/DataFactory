@@ -1,0 +1,47 @@
+{
+	"name": "DS_ADLS_ResumentMovies",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileSystem": "plata"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "Género Primario",
+				"type": "String"
+			},
+			{
+				"name": "Año",
+				"type": "String"
+			},
+			{
+				"name": "RatingPromedio",
+				"type": "String"
+			},
+			{
+				"name": "MejorRating",
+				"type": "String"
+			},
+			{
+				"name": "PeorRating",
+				"type": "String"
+			},
+			{
+				"name": "NroPelículas",
+				"type": "String"
+			}
+		]
+	}
+}

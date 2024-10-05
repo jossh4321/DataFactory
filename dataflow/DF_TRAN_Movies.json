@@ -1,0 +1,100 @@
+{
+	"name": "DF_TRAN_Movies",
+	"properties": {
+		"folder": {
+			"name": "Modulo 01"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DS_ADLS_Movies",
+						"type": "DatasetReference"
+					},
+					"name": "MoviesADLS"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DS_ADLS_ResumentMovies",
+						"type": "DatasetReference"
+					},
+					"name": "SinkMovies"
+				}
+			],
+			"transformations": [
+				{
+					"name": "SelectMovies"
+				},
+				{
+					"name": "MoviesAfter1950"
+				},
+				{
+					"name": "GeneroPrimario"
+				},
+				{
+					"name": "RankingRatings"
+				},
+				{
+					"name": "AggregateRankings"
+				},
+				{
+					"name": "UpsertRows"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          movie as string,",
+				"          title as string,",
+				"          genres as string,",
+				"          year as string,",
+				"          Rating as string,",
+				"          RottenTomato as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> MoviesADLS",
+				"MoviesADLS select(mapColumn(",
+				"          {Películas} = movie,",
+				"          {Título} = title,",
+				"          {Géneros} = genres,",
+				"          {Año} = year,",
+				"          RottenTomatoes = RottenTomato",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> SelectMovies",
+				"SelectMovies filter(toInteger({Año}) > 1950) ~> MoviesAfter1950",
+				"MoviesAfter1950 derive({GéneroPrimario} = iif(locate('|', {Géneros})>1, left({Géneros}, locate('|', {Géneros})-1), {Géneros})) ~> GeneroPrimario",
+				"GeneroPrimario window(over({GéneroPrimario},",
+				"          {Año}),",
+				"     desc(RottenTomatoes, true),",
+				"     RankingRatings = rank()) ~> RankingRatings",
+				"RankingRatings aggregate(groupBy({GéneroPrimario},",
+				"          {Año}),",
+				"     RottenTomatoes = avg(toInteger(RottenTomatoes)),",
+				"          MejorRating = first({Título}),",
+				"          PeorRating = last({Título}),",
+				"          {NroPelículas} = count()) ~> AggregateRankings",
+				"AggregateRankings alterRow(upsertIf(true())) ~> UpsertRows",
+				"UpsertRows sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          {Género Primario} as string,",
+				"          {Año} as string,",
+				"          RatingPromedio as string,",
+				"          MejorRating as string,",
+				"          PeorRating as string,",
+				"          {NroPelículas} as string",
+				"     ),",
+				"     partitionFileNames:['AggMoviesJCD.csv'],",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> SinkMovies"
+			]
+		}
+	}
+}
