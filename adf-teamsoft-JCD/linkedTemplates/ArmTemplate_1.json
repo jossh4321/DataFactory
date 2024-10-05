@@ -13,6 +13,367 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/PL_AW_ASQL_to_ADLS')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "LK_ObtenerTablasIngesta",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "@concat('SELECT \n NombreEsquema, \n NombreTabla\nFROM intg.TablasIngesta\nWHERE Grupo = ''', pipeline().parameters.Grupo,\n''' AND Estado = 1')\n",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "DS_SQL_Integracion_TablaIngesta",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "FE_CopiarTablas_Ingesta",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "LK_ObtenerTablasIngesta",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('LK_ObtenerTablasIngesta').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "CD_DATA_ASQL_to_ADLS",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"sqlReaderQuery": {
+												"value": "@concat('SELECT * FROM ', item().NombreEsquema, '.', item().NombreTabla)\n",
+												"type": "Expression"
+											},
+											"queryTimeout": "02:00:00",
+											"partitionOption": "None"
+										},
+										"sink": {
+											"type": "ParquetSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "ParquetWriteSettings"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "DS_ASQL_AdventureWorks_Data",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "DS_ADLS_AW_Data",
+											"type": "DatasetReference",
+											"parameters": {
+												"Ruta": {
+													"value": "@concat(item().NombreEsquema, '\\', item().NombreTabla)\n",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"Grupo": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Modulo 05"
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-09-28T15:44:27Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_DATA_CopiaArchivos')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "CD_S3_Movies_to_ADLS",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AmazonS3ReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings",
+									"copyBehavior": "FlattenHierarchy"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_S3_Movies",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DS_ADLS_Movies",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-09-19T00:53:30Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_TRAN_UpdateCustomerDimension')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Modulo 04"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_Tailspin_CustomerSource",
+								"type": "DatasetReference"
+							},
+							"name": "SourceDB"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_Tailspin_DimCustomer",
+								"type": "DatasetReference"
+							},
+							"name": "DimCustomer"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_Tailspin_DimCustomer",
+								"type": "DatasetReference"
+							},
+							"name": "SinkDimCustomer"
+						}
+					],
+					"transformations": [
+						{
+							"name": "CreateCustomHash"
+						},
+						{
+							"name": "ExistsHash"
+						},
+						{
+							"name": "LookupCustomerID"
+						},
+						{
+							"name": "SetDates"
+						},
+						{
+							"name": "AllowUpsert"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          CustomerID as integer,",
+						"          Title as string,",
+						"          FirstName as string,",
+						"          MiddleName as string,",
+						"          LastName as string,",
+						"          Suffix as string,",
+						"          CompanyName as string,",
+						"          SalesPerson as string,",
+						"          EmailAddress as string,",
+						"          Phone as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> SourceDB",
+						"source(output(",
+						"          CustomerID as integer,",
+						"          Title as string,",
+						"          FirstName as string,",
+						"          MiddleName as string,",
+						"          LastName as string,",
+						"          Suffix as string,",
+						"          CompanyName as string,",
+						"          SalesPerson as string,",
+						"          EmailAddress as string,",
+						"          Phone as string,",
+						"          InsertedDate as timestamp,",
+						"          ModifiedDate as timestamp,",
+						"          HashKey as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> DimCustomer",
+						"SourceDB derive(HashKey = sha2(256, iifNull(Title,'') +FirstName \r",
+						"+iifNull(MiddleName,'') +LastName \r",
+						"+iifNull(Suffix,'') +iifNull(CompanyName,'') \r",
+						"+iifNull(SalesPerson,'') \r",
+						"+iifNull(EmailAddress,'') +iifNull(Phone,''))) ~> CreateCustomHash",
+						"CreateCustomHash, DimCustomer exists(CreateCustomHash@HashKey == DimCustomer@HashKey,",
+						"     negate:true,",
+						"     broadcast: 'auto')~> ExistsHash",
+						"ExistsHash, DimCustomer lookup(SourceDB@CustomerID == DimCustomer@CustomerID,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> LookupCustomerID",
+						"LookupCustomerID derive(InsertedDate = iif(isNull(InsertedDate), \r",
+						"currentTimestamp(), InsertedDate),",
+						"          ModifiedDate = currentTimestamp()) ~> SetDates",
+						"SetDates alterRow(upsertIf(true())) ~> AllowUpsert",
+						"AllowUpsert sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          CustomerID as integer,",
+						"          Title as string,",
+						"          FirstName as string,",
+						"          MiddleName as string,",
+						"          LastName as string,",
+						"          Suffix as string,",
+						"          CompanyName as string,",
+						"          SalesPerson as string,",
+						"          EmailAddress as string,",
+						"          Phone as string,",
+						"          InsertedDate as timestamp,",
+						"          ModifiedDate as timestamp,",
+						"          HashKey as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:false,",
+						"     updateable:false,",
+						"     upsertable:true,",
+						"     keys:['CustomerID'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          CustomerID = SourceDB@CustomerID,",
+						"          Title = SourceDB@Title,",
+						"          FirstName = SourceDB@FirstName,",
+						"          MiddleName = SourceDB@MiddleName,",
+						"          LastName = SourceDB@LastName,",
+						"          Suffix = SourceDB@Suffix,",
+						"          CompanyName = SourceDB@CompanyName,",
+						"          SalesPerson = SourceDB@SalesPerson,",
+						"          EmailAddress = SourceDB@EmailAddress,",
+						"          Phone = SourceDB@Phone,",
+						"          InsertedDate,",
+						"          ModifiedDate,",
+						"          HashKey = CreateCustomHash@HashKey",
+						"     )) ~> SinkDimCustomer"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/PQ_TRAN_Departamento_Zona')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -104,7 +465,9 @@
 				"annotations": [],
 				"lastPublishTime": "2024-09-28T15:44:28Z"
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/PL_AW_ASQL_to_ADLS')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/PL_TRAN_Customer')]",
@@ -153,7 +516,9 @@
 				"annotations": [],
 				"lastPublishTime": "2024-09-26T00:16:31Z"
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/DF_TRAN_UpdateCustomerDimension')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/PL_TRAN_mstDepartamento')]",
@@ -251,7 +616,9 @@
 					}
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/PL_DATA_CopiaArchivos')]"
+			]
 		}
 	]
 }
