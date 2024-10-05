@@ -27,9 +27,24 @@
 						"type": "DatasetReference"
 					},
 					"name": "SourceDBProductCategory"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_Datawarehouse_dimProduct06",
+						"type": "DatasetReference"
+					},
+					"name": "DimProduct06"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_Datawarehouse_dimProduct06",
+						"type": "DatasetReference"
+					},
+					"name": "SinkDimProduct06"
+				}
+			],
 			"transformations": [
 				{
 					"name": "CreateCustomHash"
@@ -38,7 +53,19 @@
 					"name": "LookupProductSubcategoryKey"
 				},
 				{
-					"name": "LookUpProductCategory"
+					"name": "LookUpProductCategoryKey"
+				},
+				{
+					"name": "ExistHash"
+				},
+				{
+					"name": "LookUpProductKey"
+				},
+				{
+					"name": "SetDates"
+				},
+				{
+					"name": "AllowUpsert"
 				}
 			],
 			"scriptLines": [
@@ -78,26 +105,101 @@
 				"     validateSchema: false,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
 				"     format: 'table') ~> SourceDBProductCategory",
-				"LookupProductSubcategoryKey derive(HashKey = sha2(256, iif(isNull(SourceDBProduct@ProductSubcategoryKey), '', toString(SourceDBProduct@ProductSubcategoryKey)) \r",
-				"+ ProductName \r",
+				"source(output(",
+				"          ProductKey as integer,",
+				"          ProductSubcategoryName as string,",
+				"          ProductCategoryName as string,",
+				"          ProductName as string,",
+				"          StandardCost as decimal(19,4),",
+				"          Color as string,",
+				"          ListPrice as decimal(19,4),",
+				"          Size as string,",
+				"          Weight as double,",
+				"          DaysToManufacture as integer,",
+				"          ModelName as string,",
+				"          Description as string,",
+				"          InsertedDate as timestamp,",
+				"          ModifiedDate as timestamp,",
+				"          HashKey as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> DimProduct06",
+				"LookupProductSubcategoryKey derive(HashKey = sha2(256, ProductName \r",
+				"+ iifNull(ProductSubcategoryName, '')\r",
+				"+ iifNull(ProductCategoryName, '')\r",
 				"+ iif(isNull(StandardCost), '', toString(StandardCost)) \r",
 				"+ Color\r",
-				"+ iif(isNull(SafetyStockLevel), '', toString(SafetyStockLevel))\r",
-				"+ iif(isNull(ReorderPoint), '', toString(ReorderPoint))\r",
 				"+ iif(isNull(ListPrice), '', toString(ListPrice))\r",
 				"+ iifNull(Size, '')\r",
 				"+ iif(isNull(Weight), '', toString(Weight))\r",
 				"+ iif(isNull(DaysToManufacture), '', toString(DaysToManufacture))\r",
 				"+ iifNull(ModelName, '')\r",
 				"+ iifNull(Description, ''))) ~> CreateCustomHash",
-				"SourceDBProduct, LookUpProductCategory lookup(SourceDBProduct@ProductSubcategoryKey == SourceDBProductSubcategory@ProductSubCategoryKey,",
+				"SourceDBProduct, LookUpProductCategoryKey lookup(SourceDBProduct@ProductSubcategoryKey == SourceDBProductSubcategory@ProductSubCategoryKey,",
 				"     multiple: false,",
 				"     pickup: 'any',",
 				"     broadcast: 'auto')~> LookupProductSubcategoryKey",
 				"SourceDBProductSubcategory, SourceDBProductCategory lookup(SourceDBProductSubcategory@ProductCategoryKey == SourceDBProductCategory@ProductCategoryKey,",
 				"     multiple: false,",
 				"     pickup: 'any',",
-				"     broadcast: 'auto')~> LookUpProductCategory"
+				"     broadcast: 'auto')~> LookUpProductCategoryKey",
+				"CreateCustomHash, DimProduct06 exists(CreateCustomHash@HashKey == DimProduct06@HashKey,",
+				"     negate:true,",
+				"     broadcast: 'auto')~> ExistHash",
+				"ExistHash, DimProduct06 lookup(SourceDBProduct@ProductKey == DimProduct06@ProductKey,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> LookUpProductKey",
+				"LookUpProductKey derive(InsertedDate = iif(isNull(InsertedDate), currentTimestamp(), InsertedDate),",
+				"          ModifiedDate = currentTimestamp()) ~> SetDates",
+				"SetDates alterRow(upsertIf(true())) ~> AllowUpsert",
+				"AllowUpsert sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          ProductKey as integer,",
+				"          ProductSubcategoryName as string,",
+				"          ProductCategoryName as string,",
+				"          ProductName as string,",
+				"          StandardCost as decimal(19,4),",
+				"          Color as string,",
+				"          ListPrice as decimal(19,4),",
+				"          Size as string,",
+				"          Weight as double,",
+				"          DaysToManufacture as integer,",
+				"          ModelName as string,",
+				"          Description as string,",
+				"          InsertedDate as timestamp,",
+				"          ModifiedDate as timestamp,",
+				"          HashKey as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:true,",
+				"     keys:['ProductKey'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          ProductKey = SourceDBProduct@ProductKey,",
+				"          ProductSubcategoryName = SourceDBProductCategory@ProductCategoryName,",
+				"          ProductCategoryName = SourceDBProductSubcategory@ProductSubcategoryName,",
+				"          ProductName = SourceDBProduct@ProductName,",
+				"          StandardCost = SourceDBProduct@StandardCost,",
+				"          Color = SourceDBProduct@Color,",
+				"          ListPrice = SourceDBProduct@ListPrice,",
+				"          Size = SourceDBProduct@Size,",
+				"          Weight = SourceDBProduct@Weight,",
+				"          DaysToManufacture = SourceDBProduct@DaysToManufacture,",
+				"          ModelName = SourceDBProduct@ModelName,",
+				"          Description = SourceDBProduct@Description,",
+				"          InsertedDate,",
+				"          ModifiedDate,",
+				"          HashKey = CreateCustomHash@HashKey",
+				"     )) ~> SinkDimProduct06"
 			]
 		}
 	}
