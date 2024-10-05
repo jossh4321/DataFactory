@@ -1,0 +1,34 @@
+{
+	"name": "DS_ASQL_ProductSubcategory",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ASQL_Tailspin",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Evaluacion Final"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "ProductSubCategoryKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ProductSubcategoryName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ProductCategoryKey",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "ProductSubcategory"
+		}
+	}
+}

@@ -1,0 +1,29 @@
+{
+	"name": "DS_ASQL_Tailspin_ProductCategory",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ASQL_Tailspin",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Evaluacion Final"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "ProductCategoryKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ProductCategoryName",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "ProductCategory"
+		}
+	}
+}
