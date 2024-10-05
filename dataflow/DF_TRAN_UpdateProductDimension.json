@@ -9,16 +9,36 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "DS_ASQL_Tailspin_Producto",
+						"referenceName": "DS_ASQL_Tailspin_Product",
 						"type": "DatasetReference"
 					},
 					"name": "SourceDBProduct"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_Tailspin_ProductSubcategory",
+						"type": "DatasetReference"
+					},
+					"name": "SourceDBProductSubcategory"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_Tailspin_ProductCategory",
+						"type": "DatasetReference"
+					},
+					"name": "SourceDBProductCategory"
 				}
 			],
 			"sinks": [],
 			"transformations": [
 				{
 					"name": "CreateCustomHash"
+				},
+				{
+					"name": "LookupProductSubcategoryKey"
+				},
+				{
+					"name": "LookUpProductCategory"
 				}
 			],
 			"scriptLines": [
@@ -41,7 +61,24 @@
 				"     validateSchema: false,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
 				"     format: 'table') ~> SourceDBProduct",
-				"SourceDBProduct derive(HashKey = sha2(256, iif(isNull(ProductSubcategoryKey), '', toString(ProductSubcategoryKey)) \r",
+				"source(output(",
+				"          ProductSubCategoryKey as integer,",
+				"          ProductSubcategoryName as string,",
+				"          ProductCategoryKey as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> SourceDBProductSubcategory",
+				"source(output(",
+				"          ProductCategoryKey as integer,",
+				"          ProductCategoryName as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> SourceDBProductCategory",
+				"LookupProductSubcategoryKey derive(HashKey = sha2(256, iif(isNull(SourceDBProduct@ProductSubcategoryKey), '', toString(SourceDBProduct@ProductSubcategoryKey)) \r",
 				"+ ProductName \r",
 				"+ iif(isNull(StandardCost), '', toString(StandardCost)) \r",
 				"+ Color\r",
@@ -52,7 +89,15 @@
 				"+ iif(isNull(Weight), '', toString(Weight))\r",
 				"+ iif(isNull(DaysToManufacture), '', toString(DaysToManufacture))\r",
 				"+ iifNull(ModelName, '')\r",
-				"+ iifNull(Description, ''))) ~> CreateCustomHash"
+				"+ iifNull(Description, ''))) ~> CreateCustomHash",
+				"SourceDBProduct, LookUpProductCategory lookup(SourceDBProduct@ProductSubcategoryKey == SourceDBProductSubcategory@ProductSubCategoryKey,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> LookupProductSubcategoryKey",
+				"SourceDBProductSubcategory, SourceDBProductCategory lookup(SourceDBProductSubcategory@ProductCategoryKey == SourceDBProductCategory@ProductCategoryKey,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> LookUpProductCategory"
 			]
 		}
 	}

@@ -1,5 +1,5 @@
 {
-	"name": "DS_ASQL_Tailspin_Producto",
+	"name": "DS_ASQL_Tailspin_Product",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "LS_ASQL_Tailspin",
