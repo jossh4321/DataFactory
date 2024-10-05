@@ -1,0 +1,59 @@
+{
+	"name": "DF_TRAN_UpdateProductDimension",
+	"properties": {
+		"folder": {
+			"name": "Evaluacion Final"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_Tailspin_Producto",
+						"type": "DatasetReference"
+					},
+					"name": "SourceDBProduct"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "CreateCustomHash"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          ProductKey as integer,",
+				"          ProductSubcategoryKey as integer,",
+				"          ProductName as string,",
+				"          StandardCost as decimal(19,4),",
+				"          Color as string,",
+				"          SafetyStockLevel as integer,",
+				"          ReorderPoint as integer,",
+				"          ListPrice as decimal(19,4),",
+				"          Size as string,",
+				"          Weight as double,",
+				"          DaysToManufacture as integer,",
+				"          ModelName as string,",
+				"          Description as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> SourceDBProduct",
+				"SourceDBProduct derive(HashKey = sha2(256, iif(isNull(ProductSubcategoryKey), '', toString(ProductSubcategoryKey)) \r",
+				"+ ProductName \r",
+				"+ iif(isNull(StandardCost), '', toString(StandardCost)) \r",
+				"+ Color\r",
+				"+ iif(isNull(SafetyStockLevel), '', toString(SafetyStockLevel))\r",
+				"+ iif(isNull(ReorderPoint), '', toString(ReorderPoint))\r",
+				"+ iif(isNull(ListPrice), '', toString(ListPrice))\r",
+				"+ iifNull(Size, '')\r",
+				"+ iif(isNull(Weight), '', toString(Weight))\r",
+				"+ iif(isNull(DaysToManufacture), '', toString(DaysToManufacture))\r",
+				"+ iifNull(ModelName, '')\r",
+				"+ iifNull(Description, ''))) ~> CreateCustomHash"
+			]
+		}
+	}
+}
